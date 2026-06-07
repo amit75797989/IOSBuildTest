@@ -12,14 +12,9 @@ workflows:
         script: |
           sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = RYPQCV96K9;/g' Unity-iPhone.xcodeproj/project.pbxproj
 
-      - name: Apply Provisioning Profiles
+      - name: Fix signing settings
         script: |
-          xcode-project use-profiles
-
-      - name: Verify Signing
-        script: |
-          grep DEVELOPMENT_TEAM Unity-iPhone.xcodeproj/project.pbxproj | head
-          grep PRODUCT_BUNDLE_IDENTIFIER Unity-iPhone.xcodeproj/project.pbxproj | head
+          sed -i '' 's/iPhone Developer/Apple Distribution/g' Unity-iPhone.xcodeproj/project.pbxproj
 
       - name: Archive App
         script: |
@@ -27,6 +22,10 @@ workflows:
             -project Unity-iPhone.xcodeproj \
             -scheme Unity-iPhone \
             -configuration Release \
+            DEVELOPMENT_TEAM=RYPQCV96K9 \
+            CODE_SIGN_STYLE=Automatic \
+            PRODUCT_BUNDLE_IDENTIFIER=com.magicalorbs.test \
+            -allowProvisioningUpdates \
             -archivePath build/App.xcarchive \
             archive
 
