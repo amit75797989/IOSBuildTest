@@ -62,8 +62,8 @@ workflows:
 
         submit_to_testflight: true
 
-        beta_groups:
-          - Internal Testers
+        # beta_groups:
+        #   - Internal Testers
 
       email:
         recipients:
