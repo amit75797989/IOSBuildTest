@@ -38,13 +38,6 @@ workflows:
             echo "PRIVATE_KEY FOUND"
           fi
 
-      - name: Fetch Signing Files
-        script: |
-          app-store-connect fetch-signing-files \
-            com.magicalorbs.test \
-            --type IOS_APP_STORE \
-            --create
-
       - name: Verify Downloaded Certificates
         script: |
           echo "===== CERTIFICATES ====="
