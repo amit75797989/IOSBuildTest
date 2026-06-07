@@ -1,6 +1,6 @@
 workflows:
-ios-release:
-name: Unity iOS Release
+  ios-release:
+    name: Unity iOS Release
 
 instance_type: mac_mini_m2
 
