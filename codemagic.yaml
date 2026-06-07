@@ -11,8 +11,9 @@ workflows:
 
       - name: Show signing config
         script: |
-          grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj
-          grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj
+           grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -20
+           grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -20
+           grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -20
 
       - name: Configure Team ID
         script: |
