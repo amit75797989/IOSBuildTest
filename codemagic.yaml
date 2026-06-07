@@ -8,45 +8,27 @@ workflows:
       xcode: latest
 
     scripts:
-      - name: Show Xcode Version
-        script: |
-          xcodebuild -version
-
-      - name: Show Project Files
-        script: |
-          ls -la
-
-      - name: Archive Application
+      - name: Archive
         script: |
           xcodebuild \
-            -project Unity-iPhone.xcodeproj \
-            -scheme Unity-iPhone \
-            -configuration Release \
-            -archivePath build/UnityGame.xcarchive \
-            archive \
-            CODE_SIGN_STYLE=Manual
-
-      - name: Create Export Options
-        script: |
-          cat > ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-          </dict>
-          </plist>
-          EOF
+          -project Unity-iPhone.xcodeproj \
+          -scheme Unity-iPhone \
+          -configuration Release \
+          -archivePath build/App.xcarchive \
+          archive
 
       - name: Export IPA
         script: |
           xcodebuild \
-            -exportArchive \
-            -archivePath build/UnityGame.xcarchive \
-            -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist
+          -exportArchive \
+          -archivePath build/App.xcarchive \
+          -exportPath build/export \
+          -exportOptionsPlist ExportOptions.plist
 
     artifacts:
       - build/export/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
