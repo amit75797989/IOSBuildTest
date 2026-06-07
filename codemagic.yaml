@@ -8,6 +8,10 @@ workflows:
       xcode: latest
 
     scripts:
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files com.magicalorbs.test --type IOS_APP_STORE
+
       - name: Initialize keychain
         script: |
           keychain initialize
