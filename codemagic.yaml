@@ -4,14 +4,62 @@ workflows:
 
     instance_type: mac_mini_m2
 
+    integrations:
+      app_store_connect: SunFarma
+
     environment:
       xcode: latest
 
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.magicalorbs.test
+
     scripts:
-      - name: Configure Team ID
+
+      - name: Show Codemagic Environment
         script: |
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = RYPQCV96K9;/g' Unity-iPhone.xcodeproj/project.pbxproj
-      - name: Show Signing Settings Before Changes
+          echo "===== APP STORE CONNECT ====="
+
+          if [ -z "$APP_STORE_CONNECT_ISSUER_ID" ]; then
+            echo "ISSUER_ID NOT FOUND"
+          else
+            echo "ISSUER_ID FOUND"
+          fi
+
+          if [ -z "$APP_STORE_CONNECT_KEY_IDENTIFIER" ]; then
+            echo "KEY_IDENTIFIER NOT FOUND"
+          else
+            echo "KEY_IDENTIFIER FOUND"
+          fi
+
+          if [ -z "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
+            echo "PRIVATE_KEY NOT FOUND"
+          else
+            echo "PRIVATE_KEY FOUND"
+          fi
+
+      - name: Fetch Signing Files
+        script: |
+          app-store-connect fetch-signing-files \
+            com.magicalorbs.test \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Verify Downloaded Certificates
+        script: |
+          echo "===== CERTIFICATES ====="
+          find ~/Library -name "*.p12" || true
+
+      - name: Verify Downloaded Profiles
+        script: |
+          echo "===== PROFILES ====="
+          find ~/Library -name "*.mobileprovision" || true
+
+      - name: Apply Profiles To Xcode Project
+        script: |
+          xcode-project use-profiles
+
+      - name: Verify Signing Settings
         script: |
           echo "===== CODE_SIGN_STYLE ====="
           grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
@@ -19,48 +67,60 @@ workflows:
           echo "===== CODE_SIGN_IDENTITY ====="
           grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-          echo "===== PROVISIONING_PROFILE ====="
-          grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+          echo "===== PROVISIONING_PROFILE_SPECIFIER ====="
+          grep -n "PROVISIONING_PROFILE_SPECIFIER" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-          echo "===== DEVELOPMENT_TEAM ====="
-          grep -n "DEVELOPMENT_TEAM" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
-
-      - name: Convert To Manual Distribution Signing
+      - name: Install Pods
         script: |
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' Unity-iPhone.xcodeproj/project.pbxproj || true
-          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' Unity-iPhone.xcodeproj/project.pbxproj || true
-          sed -i '' 's/iPhone Developer/Apple Distribution/g' Unity-iPhone.xcodeproj/project.pbxproj || true
+          if [ -f Podfile ]; then
+            pod install
+          fi
 
-      - name: Show Signing Settings After Changes
+      - name: Build Workspace
         script: |
-          echo "===== CODE_SIGN_STYLE ====="
-          grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+          if [ -f Unity-iPhone.xcworkspace ]; then
+            xcodebuild \
+              -workspace Unity-iPhone.xcworkspace \
+              -scheme Unity-iPhone \
+              -configuration Release \
+              -archivePath build/App.xcarchive \
+              archive
+          else
+            xcodebuild \
+              -project Unity-iPhone.xcodeproj \
+              -scheme Unity-iPhone \
+              -configuration Release \
+              -archivePath build/App.xcarchive \
+              archive
+          fi
 
-          echo "===== CODE_SIGN_IDENTITY ====="
-          grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
-
-          echo "===== PROVISIONING_PROFILE ====="
-          grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
-
-          echo "===== DEVELOPMENT_TEAM ====="
-          grep -n "DEVELOPMENT_TEAM" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
-
-      - name: Check Installed Profiles
+      - name: Export IPA
         script: |
-          echo "===== Provisioning Profiles ====="
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+          cat > exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store-connect</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+          </dict>
+          </plist>
+          EOF
 
-      - name: Archive App
-        script: |
           xcodebuild \
-            -project Unity-iPhone.xcodeproj \
-            -scheme Unity-iPhone \
-            -configuration Release \
-            DEVELOPMENT_TEAM=RYPQCV96K9 \
-            PRODUCT_BUNDLE_IDENTIFIER=com.magicalorbs.test \
+            -exportArchive \
             -archivePath build/App.xcarchive \
-            archive
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa
 
     artifacts:
+      - build/ipa/*.ipa
       - build/App.xcarchive
-      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      email:
+        recipients:
+          - amit75797989@gmail.com
