@@ -1,40 +1,67 @@
 workflows:
-  ios-release:
-    name: Unity iOS Release
+ios-release:
+name: Unity iOS Release
 
-    instance_type: mac_mini_m2
+instance_type: mac_mini_m2
 
-    environment:
-      xcode: latest
+environment:
+  xcode: latest
 
-    scripts:
+scripts:
+  - name: Configure Team ID
+    script: |
+      sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = RYPQCV96K9;/g' Unity-iPhone.xcodeproj/project.pbxproj
 
-      - name: Show signing config
-        script: |
-           grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -20
-           grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -20
-           grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -20
+  - name: Show Signing Settings Before Changes
+    script: |
+      echo "===== CODE_SIGN_STYLE ====="
+      grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-      - name: Configure Team ID
-        script: |
-          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = RYPQCV96K9;/g' Unity-iPhone.xcodeproj/project.pbxproj
+      echo "===== CODE_SIGN_IDENTITY ====="
+      grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-      - name: Fix signing settings
-        script: |
-          sed -i '' 's/iPhone Developer/Apple Distribution/g' Unity-iPhone.xcodeproj/project.pbxproj
+      echo "===== PROVISIONING_PROFILE ====="
+      grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-      - name: Archive App
-        script: |
-          xcodebuild \
-            -project Unity-iPhone.xcodeproj \
-            -scheme Unity-iPhone \
-            -configuration Release \
-            DEVELOPMENT_TEAM=RYPQCV96K9 \
-            CODE_SIGN_STYLE=Automatic \
-            PRODUCT_BUNDLE_IDENTIFIER=com.magicalorbs.test \
-            -allowProvisioningUpdates \
-            -archivePath build/App.xcarchive \
-            archive
+      echo "===== DEVELOPMENT_TEAM ====="
+      grep -n "DEVELOPMENT_TEAM" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
 
-    artifacts:
-      - build/App.xcarchive
+  - name: Convert To Manual Distribution Signing
+    script: |
+      sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' Unity-iPhone.xcodeproj/project.pbxproj || true
+      sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' Unity-iPhone.xcodeproj/project.pbxproj || true
+      sed -i '' 's/iPhone Developer/Apple Distribution/g' Unity-iPhone.xcodeproj/project.pbxproj || true
+
+  - name: Show Signing Settings After Changes
+    script: |
+      echo "===== CODE_SIGN_STYLE ====="
+      grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+
+      echo "===== CODE_SIGN_IDENTITY ====="
+      grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+
+      echo "===== PROVISIONING_PROFILE ====="
+      grep -n "PROVISIONING_PROFILE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+
+      echo "===== DEVELOPMENT_TEAM ====="
+      grep -n "DEVELOPMENT_TEAM" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+
+  - name: Check Installed Profiles
+    script: |
+      echo "===== Provisioning Profiles ====="
+      ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+
+  - name: Archive App
+    script: |
+      xcodebuild \
+        -project Unity-iPhone.xcodeproj \
+        -scheme Unity-iPhone \
+        -configuration Release \
+        DEVELOPMENT_TEAM=RYPQCV96K9 \
+        PRODUCT_BUNDLE_IDENTIFIER=com.magicalorbs.test \
+        -archivePath build/App.xcarchive \
+        archive
+
+artifacts:
+  - build/App.xcarchive
+  - /tmp/xcodebuild_logs/*.log
