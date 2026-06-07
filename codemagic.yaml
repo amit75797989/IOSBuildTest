@@ -1,123 +1,71 @@
 workflows:
-  ios-release:
-    name: Unity iOS Release
+ios-release:
+name: Unity iOS Release
 
-    instance_type: mac_mini_m2
+instance_type: mac_mini_m2
 
-    integrations:
-      app_store_connect: SunFarma
+integrations:
+  app_store_connect: SunFarma
 
-    environment:
-      xcode: latest
+environment:
+  xcode: latest
 
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.magicalorbs.test
+  ios_signing:
+    distribution_type: app_store
+    bundle_identifier: com.magicalorbs.test
 
-    scripts:
+scripts:
 
-      - name: Show Codemagic Environment
-        script: |
-          echo "===== APP STORE CONNECT ====="
+  - name: Apply Profiles To Xcode Project
+    script: |
+      xcode-project use-profiles
 
-          if [ -z "$APP_STORE_CONNECT_ISSUER_ID" ]; then
-            echo "ISSUER_ID NOT FOUND"
-          else
-            echo "ISSUER_ID FOUND"
-          fi
+  - name: Install Pods
+    script: |
+      if [ -f Podfile ]; then
+        pod install
+      fi
 
-          if [ -z "$APP_STORE_CONNECT_KEY_IDENTIFIER" ]; then
-            echo "KEY_IDENTIFIER NOT FOUND"
-          else
-            echo "KEY_IDENTIFIER FOUND"
-          fi
+  - name: Build Workspace
+    script: |
+      if [ -f Unity-iPhone.xcworkspace ]; then
+        xcodebuild \
+          -workspace Unity-iPhone.xcworkspace \
+          -scheme Unity-iPhone \
+          -configuration Release \
+          -archivePath build/App.xcarchive \
+          archive
+      else
+        xcodebuild \
+          -project Unity-iPhone.xcodeproj \
+          -scheme Unity-iPhone \
+          -configuration Release \
+          -archivePath build/App.xcarchive \
+          archive
+      fi
 
-          if [ -z "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
-            echo "PRIVATE_KEY NOT FOUND"
-          else
-            echo "PRIVATE_KEY FOUND"
-          fi
+  - name: Export IPA
+    script: |
+      xcodebuild \
+        -exportArchive \
+        -archivePath build/App.xcarchive \
+        -exportOptionsPlist /Users/builder/export_options.plist \
+        -exportPath build/ipa
 
-      - name: Verify Downloaded Certificates
-        script: |
-          echo "===== CERTIFICATES ====="
-          find ~/Library -name "*.p12" || true
+artifacts:
+  - build/ipa/*.ipa
+  - build/App.xcarchive
 
-      - name: Verify Downloaded Profiles
-        script: |
-          echo "===== PROFILES ====="
-          find ~/Library -name "*.mobileprovision" || true
+publishing:
+  app_store_connect:
+    auth: integration
 
-      - name: Apply Profiles To Xcode Project
-        script: |
-          xcode-project use-profiles
+    submit_to_testflight: true
 
-      - name: Verify Signing Settings
-        script: |
-          echo "===== CODE_SIGN_STYLE ====="
-          grep -n "CODE_SIGN_STYLE" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+    beta_groups:
+      - Internal Testers
 
-          echo "===== CODE_SIGN_IDENTITY ====="
-          grep -n "CODE_SIGN_IDENTITY" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
+  email:
+    recipients:
+      - amit75797989@gmail.com
 
-          echo "===== PROVISIONING_PROFILE_SPECIFIER ====="
-          grep -n "PROVISIONING_PROFILE_SPECIFIER" Unity-iPhone.xcodeproj/project.pbxproj | head -50 || true
-
-      - name: Install Pods
-        script: |
-          if [ -f Podfile ]; then
-            pod install
-          fi
-
-      - name: Build Workspace
-        script: |
-          if [ -f Unity-iPhone.xcworkspace ]; then
-            xcodebuild \
-              -workspace Unity-iPhone.xcworkspace \
-              -scheme Unity-iPhone \
-              -configuration Release \
-              -archivePath build/App.xcarchive \
-              archive
-          else
-            xcodebuild \
-              -project Unity-iPhone.xcodeproj \
-              -scheme Unity-iPhone \
-              -configuration Release \
-              -archivePath build/App.xcarchive \
-              archive
-          fi
-
-      - name: Export IPA
-        script: |
-          cat > exportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store-connect</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-          </dict>
-          </plist>
-          EOF
-
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/App.xcarchive \
-            -exportOptionsPlist exportOptions.plist \
-            -exportPath build/ipa
-
-    artifacts:
-      - build/ipa/*.ipa
-      - build/App.xcarchive
-
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-
-      email:
-        recipients:
-          - amit75797989@gmail.com
