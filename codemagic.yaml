@@ -7,23 +7,23 @@ workflows:
     environment:
       xcode: latest
 
+    ios_signing:
+      distribution_type: app_store
+      bundle_identifier: com.magicalorbs.test
+
     scripts:
+      - name: Configure code signing
+        script: |
+          xcode-project use-profiles
+
       - name: Archive
         script: |
           xcodebuild \
-          -project Unity-iPhone.xcodeproj \
-          -scheme Unity-iPhone \
-          -configuration Release \
-          -archivePath build/App.xcarchive \
-          archive
-
-      - name: Export IPA
-        script: |
-          xcodebuild \
-          -exportArchive \
-          -archivePath build/App.xcarchive \
-          -exportPath build/export \
-          -exportOptionsPlist ExportOptions.plist
+            -project Unity-iPhone.xcodeproj \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            archive
 
     artifacts:
-      - build/export/*.ipa
+      - build/App.xcarchive
