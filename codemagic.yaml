@@ -1,71 +1,71 @@
 workflows:
-ios-release:
-name: Unity iOS Release
+  ios-release:
+    name: Unity iOS Release
 
-instance_type: mac_mini_m2
+    instance_type: mac_mini_m2
 
-integrations:
-  app_store_connect: SunFarma
+    integrations:
+      app_store_connect: SunFarma
 
-environment:
-  xcode: latest
+    environment:
+      xcode: latest
 
-  ios_signing:
-    distribution_type: app_store
-    bundle_identifier: com.magicalorbs.test
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.magicalorbs.test
 
-scripts:
+    scripts:
 
-  - name: Apply Profiles To Xcode Project
-    script: |
-      xcode-project use-profiles
+      - name: Apply Profiles To Xcode Project
+        script: |
+          xcode-project use-profiles
 
-  - name: Install Pods
-    script: |
-      if [ -f Podfile ]; then
-        pod install
-      fi
+      - name: Install Pods
+        script: |
+          if [ -f Podfile ]; then
+            pod install
+          fi
 
-  - name: Build Workspace
-    script: |
-      if [ -f Unity-iPhone.xcworkspace ]; then
-        xcodebuild \
-          -workspace Unity-iPhone.xcworkspace \
-          -scheme Unity-iPhone \
-          -configuration Release \
-          -archivePath build/App.xcarchive \
-          archive
-      else
-        xcodebuild \
-          -project Unity-iPhone.xcodeproj \
-          -scheme Unity-iPhone \
-          -configuration Release \
-          -archivePath build/App.xcarchive \
-          archive
-      fi
+      - name: Build Workspace
+        script: |
+          if [ -f Unity-iPhone.xcworkspace ]; then
+            xcodebuild \
+              -workspace Unity-iPhone.xcworkspace \
+              -scheme Unity-iPhone \
+              -configuration Release \
+              -archivePath build/App.xcarchive \
+              archive
+          else
+            xcodebuild \
+              -project Unity-iPhone.xcodeproj \
+              -scheme Unity-iPhone \
+              -configuration Release \
+              -archivePath build/App.xcarchive \
+              archive
+          fi 
 
-  - name: Export IPA
-    script: |
-      xcodebuild \
-        -exportArchive \
-        -archivePath build/App.xcarchive \
-        -exportOptionsPlist /Users/builder/export_options.plist \
-        -exportPath build/ipa
+      - name: Export IPA
+        script: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/App.xcarchive \
+            -exportOptionsPlist /Users/builder/export_options.plist \
+            -exportPath build/ipa
 
-artifacts:
-  - build/ipa/*.ipa
-  - build/App.xcarchive
+    artifacts:
+      - build/ipa/*.ipa
+      - build/App.xcarchive
 
-publishing:
-  app_store_connect:
-    auth: integration
+    publishing:
+      app_store_connect:
+        auth: integration
 
-    submit_to_testflight: true
+        submit_to_testflight: true
 
-    beta_groups:
-      - Internal Testers
+        beta_groups:
+          - Internal Testers
 
-  email:
-    recipients:
-      - amit75797989@gmail.com
+      email:
+        recipients:
+          - amit75797989@gmail.com
 
