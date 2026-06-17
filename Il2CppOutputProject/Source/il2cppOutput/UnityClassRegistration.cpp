@@ -130,7 +130,6 @@ void InvokeRegisterStaticallyLinkedModuleClasses()
 class NavMeshAgent; template <> void RegisterUnityClass<NavMeshAgent>(const char*);
 class NavMeshProjectSettings; template <> void RegisterUnityClass<NavMeshProjectSettings>(const char*);
 class NavMeshSettings; template <> void RegisterUnityClass<NavMeshSettings>(const char*);
-class Animation; template <> void RegisterUnityClass<Animation>(const char*);
 class AnimationClip; template <> void RegisterUnityClass<AnimationClip>(const char*);
 class Animator; template <> void RegisterUnityClass<Animator>(const char*);
 class AnimatorController; template <> void RegisterUnityClass<AnimatorController>(const char*);
@@ -143,6 +142,7 @@ class AudioClip; template <> void RegisterUnityClass<AudioClip>(const char*);
 class AudioListener; template <> void RegisterUnityClass<AudioListener>(const char*);
 class AudioManager; template <> void RegisterUnityClass<AudioManager>(const char*);
 class AudioResource; template <> void RegisterUnityClass<AudioResource>(const char*);
+class AudioSource; template <> void RegisterUnityClass<AudioSource>(const char*);
 class BaseVideoTexture; template <> void RegisterUnityClass<BaseVideoTexture>(const char*);
 class SampleClip; template <> void RegisterUnityClass<SampleClip>(const char*);
 class WebCamTexture; template <> void RegisterUnityClass<WebCamTexture>(const char*);
@@ -241,32 +241,32 @@ RegisterBuiltinTypes();
 	RegisterUnityClass<NavMeshProjectSettings>("AI");
 	//2. NavMeshSettings
 	RegisterUnityClass<NavMeshSettings>("AI");
-	//3. Animation
-	RegisterUnityClass<Animation>("Animation");
-	//4. AnimationClip
+	//3. AnimationClip
 	RegisterUnityClass<AnimationClip>("Animation");
-	//5. Animator
+	//4. Animator
 	RegisterUnityClass<Animator>("Animation");
-	//6. AnimatorController
+	//5. AnimatorController
 	RegisterUnityClass<AnimatorController>("Animation");
-	//7. AnimatorOverrideController
+	//6. AnimatorOverrideController
 	RegisterUnityClass<AnimatorOverrideController>("Animation");
-	//8. Avatar
+	//7. Avatar
 	RegisterUnityClass<Avatar>("Animation");
-	//9. Motion
+	//8. Motion
 	RegisterUnityClass<Motion>("Animation");
-	//10. RuntimeAnimatorController
+	//9. RuntimeAnimatorController
 	RegisterUnityClass<RuntimeAnimatorController>("Animation");
-	//11. AudioBehaviour
+	//10. AudioBehaviour
 	RegisterUnityClass<AudioBehaviour>("Audio");
-	//12. AudioClip
+	//11. AudioClip
 	RegisterUnityClass<AudioClip>("Audio");
-	//13. AudioListener
+	//12. AudioListener
 	RegisterUnityClass<AudioListener>("Audio");
-	//14. AudioManager
+	//13. AudioManager
 	RegisterUnityClass<AudioManager>("Audio");
-	//15. AudioResource
+	//14. AudioResource
 	RegisterUnityClass<AudioResource>("Audio");
+	//15. AudioSource
+	RegisterUnityClass<AudioSource>("Audio");
 	//16. BaseVideoTexture
 	RegisterUnityClass<BaseVideoTexture>("Audio");
 	//17. SampleClip

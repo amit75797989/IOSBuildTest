@@ -796,18 +796,6 @@ void RegisterAllStrippedInternalCalls()
 
 	//End Registrations for type : UnityEngine.AndroidJNI
 
-	//Start Registrations for type : UnityEngine.Animation
-
-		//System.Int32 UnityEngine.Animation::GetStateCount_Injected(System.IntPtr)
-		void Register_UnityEngine_Animation_GetStateCount_Injected();
-		Register_UnityEngine_Animation_GetStateCount_Injected();
-
-		//UnityEngine.AnimationState UnityEngine.Animation::GetStateAtIndex_Injected(System.IntPtr,System.Int32)
-		void Register_UnityEngine_Animation_GetStateAtIndex_Injected();
-		Register_UnityEngine_Animation_GetStateAtIndex_Injected();
-
-	//End Registrations for type : UnityEngine.Animation
-
 	//Start Registrations for type : UnityEngine.AnimationCurve
 
 		//System.Boolean UnityEngine.AnimationCurve::Internal_Equals_Injected(System.IntPtr,System.IntPtr)
